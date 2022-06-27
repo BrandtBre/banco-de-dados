@@ -35,7 +35,7 @@ select
     l.publicacao
 from emprestimo as e
 inner join usuario as u on (e.id_usuario = u.id)
-inner join emprestimo_livros as el on ()
-inner join 
+inner join emprestimo_livros as el on (el.id_emprestimo = e.id)
+inner join livros as l on (el.id_livro = l.id)
 
 where u.telefone like '(49)%'
