@@ -5,7 +5,7 @@
 -- Dumped from database version 14.4 (Ubuntu 14.4-1.pgdg20.04+1)
 -- Dumped by pg_dump version 14.4 (Ubuntu 14.4-1.pgdg20.04+1)
 
--- Started on 2022-07-01 14:41:13 -03
+-- Started on 2022-07-01 17:56:07 -03
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -1298,7 +1298,7 @@ ALTER TABLE ONLY public.enderecos_fornecedores
     ADD CONSTRAINT fk_fornecedores_to_enderecos_fornecedores FOREIGN KEY (id_fornecedores) REFERENCES public.fornecedores(id);
 
 
--- Completed on 2022-07-01 14:41:14 -03
+-- Completed on 2022-07-01 17:56:08 -03
 
 --
 -- PostgreSQL database dump complete
