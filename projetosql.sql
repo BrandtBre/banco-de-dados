@@ -5,7 +5,7 @@
 -- Dumped from database version 14.4 (Ubuntu 14.4-1.pgdg20.04+1)
 -- Dumped by pg_dump version 14.4 (Ubuntu 14.4-1.pgdg20.04+1)
 
--- Started on 2022-06-30 14:22:08 -03
+-- Started on 2022-07-01 14:41:13 -03
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -58,7 +58,7 @@ CREATE SEQUENCE public.clientes_id_seq
 ALTER TABLE public.clientes_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3435 (class 0 OID 0)
+-- TOC entry 3480 (class 0 OID 0)
 -- Dependencies: 209
 -- Name: clientes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -99,7 +99,7 @@ CREATE SEQUENCE public.contas_pagar_id_seq
 ALTER TABLE public.contas_pagar_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3436 (class 0 OID 0)
+-- TOC entry 3481 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: contas_pagar_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -140,7 +140,7 @@ CREATE SEQUENCE public.contas_receber_id_seq
 ALTER TABLE public.contas_receber_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3437 (class 0 OID 0)
+-- TOC entry 3482 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: contas_receber_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -197,7 +197,7 @@ CREATE SEQUENCE public.enderecos_clientes_id_seq
 ALTER TABLE public.enderecos_clientes_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3438 (class 0 OID 0)
+-- TOC entry 3483 (class 0 OID 0)
 -- Dependencies: 215
 -- Name: enderecos_clientes_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -236,7 +236,7 @@ CREATE SEQUENCE public.enderecos_fornecedores_id_seq
 ALTER TABLE public.enderecos_fornecedores_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3439 (class 0 OID 0)
+-- TOC entry 3484 (class 0 OID 0)
 -- Dependencies: 217
 -- Name: enderecos_fornecedores_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -261,7 +261,7 @@ CREATE SEQUENCE public.enderecos_id_seq
 ALTER TABLE public.enderecos_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3440 (class 0 OID 0)
+-- TOC entry 3485 (class 0 OID 0)
 -- Dependencies: 213
 -- Name: enderecos_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -306,7 +306,7 @@ CREATE SEQUENCE public.fornecedores_id_seq
 ALTER TABLE public.fornecedores_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3441 (class 0 OID 0)
+-- TOC entry 3486 (class 0 OID 0)
 -- Dependencies: 211
 -- Name: fornecedores_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -322,7 +322,7 @@ ALTER SEQUENCE public.fornecedores_id_seq OWNED BY public.fornecedores.id;
 CREATE TABLE public.lancamentos_pagar (
     id integer NOT NULL,
     id_contas_pagar integer NOT NULL,
-    valor integer NOT NULL
+    valor numeric(15,2) NOT NULL
 );
 
 
@@ -345,7 +345,7 @@ CREATE SEQUENCE public.lancamentos_pagar_id_seq
 ALTER TABLE public.lancamentos_pagar_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3442 (class 0 OID 0)
+-- TOC entry 3487 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: lancamentos_pagar_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -361,7 +361,7 @@ ALTER SEQUENCE public.lancamentos_pagar_id_seq OWNED BY public.lancamentos_pagar
 CREATE TABLE public.lancamentos_receber (
     id integer NOT NULL,
     id_contas_receber integer NOT NULL,
-    valor integer NOT NULL
+    valor numeric(15,2) NOT NULL
 );
 
 
@@ -384,7 +384,7 @@ CREATE SEQUENCE public.lancamentos_receber_id_seq
 ALTER TABLE public.lancamentos_receber_id_seq OWNER TO postgres;
 
 --
--- TOC entry 3443 (class 0 OID 0)
+-- TOC entry 3488 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: lancamentos_receber_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
@@ -393,7 +393,162 @@ ALTER SEQUENCE public.lancamentos_receber_id_seq OWNED BY public.lancamentos_rec
 
 
 --
--- TOC entry 3214 (class 2604 OID 16980)
+-- TOC entry 234 (class 1259 OID 17240)
+-- Name: vw_aniversario; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.vw_aniversario AS
+ SELECT c.telefone,
+    c.celular,
+    c.email
+   FROM public.clientes c
+  WHERE ((EXTRACT(day FROM c.data_nascimento) = EXTRACT(day FROM now())) AND (EXTRACT(month FROM c.data_nascimento) = EXTRACT(month FROM now())));
+
+
+ALTER TABLE public.vw_aniversario OWNER TO postgres;
+
+--
+-- TOC entry 228 (class 1259 OID 17212)
+-- Name: vw_avg_valor_fornecedores; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.vw_avg_valor_fornecedores AS
+ SELECT round(avg(lp.valor), 2) AS round
+   FROM ((public.lancamentos_pagar lp
+     JOIN public.contas_pagar cp ON ((lp.id_contas_pagar = cp.id)))
+     JOIN public.fornecedores f ON ((cp.id_fornecedores = f.id)))
+  WHERE (f.id = ANY (ARRAY[20, 3, 17, 18, 19, 30]));
+
+
+ALTER TABLE public.vw_avg_valor_fornecedores OWNER TO postgres;
+
+--
+-- TOC entry 232 (class 1259 OID 17230)
+-- Name: vw_cidade_estado_mais_mil; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.vw_cidade_estado_mais_mil AS
+ SELECT e.cidade,
+    e.estado
+   FROM ((((public.lancamentos_pagar lp
+     JOIN public.contas_pagar cp ON ((lp.id_contas_pagar = cp.id)))
+     JOIN public.fornecedores f ON ((cp.id_fornecedores = f.id)))
+     JOIN public.enderecos_fornecedores ef ON ((ef.id_fornecedores = f.id)))
+     JOIN public.enderecos e ON ((ef.id_enderecos = e.id)))
+  WHERE (lp.valor > 1000.00);
+
+
+ALTER TABLE public.vw_cidade_estado_mais_mil OWNER TO postgres;
+
+--
+-- TOC entry 227 (class 1259 OID 17208)
+-- Name: vw_clientes_vencimentos; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.vw_clientes_vencimentos AS
+ SELECT c.nome
+   FROM (public.contas_receber cr
+     JOIN public.clientes c ON ((cr.id_clientes = c.id)))
+  WHERE (cr.vencimento < '2024-12-31'::date);
+
+
+ALTER TABLE public.vw_clientes_vencimentos OWNER TO postgres;
+
+--
+-- TOC entry 233 (class 1259 OID 17235)
+-- Name: vw_media_idade; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.vw_media_idade AS
+ SELECT avg(age((c.data_nascimento)::timestamp with time zone)) AS media_idade
+   FROM ((public.lancamentos_receber lr
+     JOIN public.contas_receber cr ON ((lr.id_contas_receber = cr.id)))
+     JOIN public.clientes c ON ((cr.id_clientes = c.id)))
+  WHERE (lr.valor < (500)::numeric);
+
+
+ALTER TABLE public.vw_media_idade OWNER TO postgres;
+
+--
+-- TOC entry 230 (class 1259 OID 17222)
+-- Name: vw_movimentacoes; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.vw_movimentacoes AS
+ SELECT lancamentos_receber.valor,
+    'R'::text AS tipo
+   FROM public.lancamentos_receber
+UNION ALL
+ SELECT lancamentos_pagar.valor,
+    'P'::text AS tipo
+   FROM public.lancamentos_pagar;
+
+
+ALTER TABLE public.vw_movimentacoes OWNER TO postgres;
+
+--
+-- TOC entry 231 (class 1259 OID 17226)
+-- Name: vw_saldo; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.vw_saldo AS
+ SELECT sum(
+        CASE
+            WHEN (vw_movimentacoes.tipo = 'R'::text) THEN vw_movimentacoes.valor
+            ELSE NULL::numeric
+        END) AS lctos_receber,
+    sum(
+        CASE
+            WHEN (vw_movimentacoes.tipo = 'P'::text) THEN vw_movimentacoes.valor
+            ELSE NULL::numeric
+        END) AS lctos_pagar,
+    sum(
+        CASE
+            WHEN (vw_movimentacoes.tipo = 'R'::text) THEN vw_movimentacoes.valor
+            ELSE (vw_movimentacoes.valor * ('-1'::integer)::numeric)
+        END) AS saldo
+   FROM public.vw_movimentacoes;
+
+
+ALTER TABLE public.vw_saldo OWNER TO postgres;
+
+--
+-- TOC entry 229 (class 1259 OID 17217)
+-- Name: vw_saldo_lr_menos_lp; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.vw_saldo_lr_menos_lp AS
+ SELECT sum(lp.valor) AS valor_que_sai,
+    sum(lr.valor) AS valor_que_entra,
+    (sum(lp.valor) - sum(lr.valor)) AS saldo
+   FROM ((((((((public.lancamentos_receber lr
+     JOIN public.contas_receber cr ON ((lr.id_contas_receber = cr.id)))
+     JOIN public.clientes c ON ((cr.id_clientes = c.id)))
+     JOIN public.enderecos_clientes ec ON ((ec.id_clientes = c.id)))
+     JOIN public.enderecos e ON ((e.id = ec.id_enderecos)))
+     JOIN public.enderecos_fornecedores ef ON ((ef.id_enderecos = e.id)))
+     JOIN public.fornecedores f ON ((f.id = ef.id_fornecedores)))
+     JOIN public.contas_pagar cp ON ((cp.id_fornecedores = f.id)))
+     JOIN public.lancamentos_pagar lp ON ((lp.id_contas_pagar = cp.id)));
+
+
+ALTER TABLE public.vw_saldo_lr_menos_lp OWNER TO postgres;
+
+--
+-- TOC entry 235 (class 1259 OID 17244)
+-- Name: vw_vencimento_true; Type: VIEW; Schema: public; Owner: postgres
+--
+
+CREATE VIEW public.vw_vencimento_true AS
+ SELECT contas_receber.vencimento
+   FROM public.contas_receber
+  WHERE (contas_receber.situacao = true);
+
+
+ALTER TABLE public.vw_vencimento_true OWNER TO postgres;
+
+--
+-- TOC entry 3250 (class 2604 OID 16980)
 -- Name: clientes id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -401,7 +556,7 @@ ALTER TABLE ONLY public.clientes ALTER COLUMN id SET DEFAULT nextval('public.cli
 
 
 --
--- TOC entry 3221 (class 2604 OID 17070)
+-- TOC entry 3257 (class 2604 OID 17070)
 -- Name: contas_pagar id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -409,7 +564,7 @@ ALTER TABLE ONLY public.contas_pagar ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
--- TOC entry 3219 (class 2604 OID 17057)
+-- TOC entry 3255 (class 2604 OID 17057)
 -- Name: contas_receber id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -417,7 +572,7 @@ ALTER TABLE ONLY public.contas_receber ALTER COLUMN id SET DEFAULT nextval('publ
 
 
 --
--- TOC entry 3216 (class 2604 OID 17016)
+-- TOC entry 3252 (class 2604 OID 17016)
 -- Name: enderecos id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -425,7 +580,7 @@ ALTER TABLE ONLY public.enderecos ALTER COLUMN id SET DEFAULT nextval('public.en
 
 
 --
--- TOC entry 3217 (class 2604 OID 17023)
+-- TOC entry 3253 (class 2604 OID 17023)
 -- Name: enderecos_clientes id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -433,7 +588,7 @@ ALTER TABLE ONLY public.enderecos_clientes ALTER COLUMN id SET DEFAULT nextval('
 
 
 --
--- TOC entry 3218 (class 2604 OID 17040)
+-- TOC entry 3254 (class 2604 OID 17040)
 -- Name: enderecos_fornecedores id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -441,7 +596,7 @@ ALTER TABLE ONLY public.enderecos_fornecedores ALTER COLUMN id SET DEFAULT nextv
 
 
 --
--- TOC entry 3215 (class 2604 OID 16997)
+-- TOC entry 3251 (class 2604 OID 16997)
 -- Name: fornecedores id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -449,7 +604,7 @@ ALTER TABLE ONLY public.fornecedores ALTER COLUMN id SET DEFAULT nextval('public
 
 
 --
--- TOC entry 3224 (class 2604 OID 17095)
+-- TOC entry 3260 (class 2604 OID 17095)
 -- Name: lancamentos_pagar id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -457,7 +612,7 @@ ALTER TABLE ONLY public.lancamentos_pagar ALTER COLUMN id SET DEFAULT nextval('p
 
 
 --
--- TOC entry 3223 (class 2604 OID 17083)
+-- TOC entry 3259 (class 2604 OID 17083)
 -- Name: lancamentos_receber id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
@@ -465,7 +620,7 @@ ALTER TABLE ONLY public.lancamentos_receber ALTER COLUMN id SET DEFAULT nextval(
 
 
 --
--- TOC entry 3413 (class 0 OID 16977)
+-- TOC entry 3458 (class 0 OID 16977)
 -- Dependencies: 210
 -- Data for Name: clientes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -503,23 +658,85 @@ INSERT INTO public.clientes VALUES (31, 'Rosângela Antonella Stella Jesus', 'ro
 
 
 --
--- TOC entry 3425 (class 0 OID 17067)
+-- TOC entry 3470 (class 0 OID 17067)
 -- Dependencies: 222
 -- Data for Name: contas_pagar; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+INSERT INTO public.contas_pagar VALUES (37, 5, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (38, 6, '2024-04-15', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (41, 9, '2024-03-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (42, 10, '2024-05-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (43, 11, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (44, 12, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (46, 14, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (47, 15, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (49, 17, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (56, 24, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (61, 29, '2025-04-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (62, 30, '2025-04-10', '1995-06-08', false);
+INSERT INTO public.contas_pagar VALUES (33, 2, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (34, 3, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (35, 4, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (36, 5, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (39, 7, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (40, 8, '2024-06-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (45, 13, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (48, 16, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (50, 18, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (51, 19, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (52, 20, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (53, 21, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (54, 22, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (55, 23, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (57, 25, '2025-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (58, 26, '2025-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (59, 27, '2025-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (60, 28, '2025-04-10', '1995-06-08', true);
+INSERT INTO public.contas_pagar VALUES (63, 31, '2025-04-10', '1995-06-08', true);
 
 
 --
--- TOC entry 3423 (class 0 OID 17054)
+-- TOC entry 3468 (class 0 OID 17054)
 -- Dependencies: 220
 -- Data for Name: contas_receber; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+INSERT INTO public.contas_receber VALUES (4, 2, '2024-04-11', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (5, 3, '2024-04-12', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (6, 4, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (7, 5, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (10, 8, '2024-06-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (11, 9, '2024-03-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (13, 11, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (14, 12, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (16, 14, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (17, 15, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (18, 16, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (19, 17, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (20, 18, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (21, 19, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (22, 20, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (24, 22, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (26, 24, '2024-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (28, 26, '2025-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (29, 27, '2025-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (30, 28, '2025-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (33, 31, '2025-04-10', '1995-06-08', false);
+INSERT INTO public.contas_receber VALUES (3, 2, '2024-04-11', '1995-06-08', true);
+INSERT INTO public.contas_receber VALUES (8, 6, '2024-04-15', '1995-06-08', true);
+INSERT INTO public.contas_receber VALUES (9, 7, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_receber VALUES (12, 10, '2024-05-10', '1995-06-08', true);
+INSERT INTO public.contas_receber VALUES (15, 13, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_receber VALUES (23, 21, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_receber VALUES (25, 23, '2024-04-10', '1995-06-08', true);
+INSERT INTO public.contas_receber VALUES (27, 25, '2025-04-10', '1995-06-08', true);
+INSERT INTO public.contas_receber VALUES (31, 29, '2025-04-10', '1995-06-08', true);
+INSERT INTO public.contas_receber VALUES (32, 30, '2025-04-10', '1995-06-08', true);
 
 
 --
--- TOC entry 3417 (class 0 OID 17013)
+-- TOC entry 3462 (class 0 OID 17013)
 -- Dependencies: 214
 -- Data for Name: enderecos; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -557,23 +774,83 @@ INSERT INTO public.enderecos VALUES (34, '916', 'Rio Branco', 'AC', 'Rua Socorro
 
 
 --
--- TOC entry 3419 (class 0 OID 17020)
+-- TOC entry 3464 (class 0 OID 17020)
 -- Dependencies: 216
 -- Data for Name: enderecos_clientes; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+INSERT INTO public.enderecos_clientes VALUES (1, 5, 2);
+INSERT INTO public.enderecos_clientes VALUES (2, 6, 3);
+INSERT INTO public.enderecos_clientes VALUES (3, 7, 4);
+INSERT INTO public.enderecos_clientes VALUES (4, 8, 5);
+INSERT INTO public.enderecos_clientes VALUES (5, 9, 6);
+INSERT INTO public.enderecos_clientes VALUES (6, 10, 7);
+INSERT INTO public.enderecos_clientes VALUES (7, 11, 8);
+INSERT INTO public.enderecos_clientes VALUES (8, 12, 9);
+INSERT INTO public.enderecos_clientes VALUES (9, 13, 10);
+INSERT INTO public.enderecos_clientes VALUES (10, 14, 11);
+INSERT INTO public.enderecos_clientes VALUES (11, 15, 12);
+INSERT INTO public.enderecos_clientes VALUES (12, 16, 13);
+INSERT INTO public.enderecos_clientes VALUES (13, 17, 14);
+INSERT INTO public.enderecos_clientes VALUES (14, 18, 15);
+INSERT INTO public.enderecos_clientes VALUES (15, 19, 16);
+INSERT INTO public.enderecos_clientes VALUES (16, 20, 17);
+INSERT INTO public.enderecos_clientes VALUES (17, 21, 18);
+INSERT INTO public.enderecos_clientes VALUES (18, 22, 19);
+INSERT INTO public.enderecos_clientes VALUES (19, 23, 20);
+INSERT INTO public.enderecos_clientes VALUES (20, 24, 21);
+INSERT INTO public.enderecos_clientes VALUES (21, 25, 22);
+INSERT INTO public.enderecos_clientes VALUES (22, 26, 23);
+INSERT INTO public.enderecos_clientes VALUES (23, 27, 24);
+INSERT INTO public.enderecos_clientes VALUES (24, 28, 25);
+INSERT INTO public.enderecos_clientes VALUES (25, 29, 26);
+INSERT INTO public.enderecos_clientes VALUES (26, 30, 27);
+INSERT INTO public.enderecos_clientes VALUES (27, 31, 28);
+INSERT INTO public.enderecos_clientes VALUES (28, 32, 29);
+INSERT INTO public.enderecos_clientes VALUES (29, 33, 30);
+INSERT INTO public.enderecos_clientes VALUES (30, 34, 31);
 
 
 --
--- TOC entry 3421 (class 0 OID 17037)
+-- TOC entry 3466 (class 0 OID 17037)
 -- Dependencies: 218
 -- Data for Name: enderecos_fornecedores; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+INSERT INTO public.enderecos_fornecedores VALUES (1, 5, 2);
+INSERT INTO public.enderecos_fornecedores VALUES (2, 6, 3);
+INSERT INTO public.enderecos_fornecedores VALUES (3, 7, 4);
+INSERT INTO public.enderecos_fornecedores VALUES (4, 8, 5);
+INSERT INTO public.enderecos_fornecedores VALUES (5, 9, 6);
+INSERT INTO public.enderecos_fornecedores VALUES (6, 10, 7);
+INSERT INTO public.enderecos_fornecedores VALUES (7, 11, 8);
+INSERT INTO public.enderecos_fornecedores VALUES (8, 12, 9);
+INSERT INTO public.enderecos_fornecedores VALUES (9, 13, 10);
+INSERT INTO public.enderecos_fornecedores VALUES (10, 14, 11);
+INSERT INTO public.enderecos_fornecedores VALUES (11, 15, 12);
+INSERT INTO public.enderecos_fornecedores VALUES (12, 16, 13);
+INSERT INTO public.enderecos_fornecedores VALUES (13, 17, 14);
+INSERT INTO public.enderecos_fornecedores VALUES (14, 18, 15);
+INSERT INTO public.enderecos_fornecedores VALUES (15, 19, 16);
+INSERT INTO public.enderecos_fornecedores VALUES (16, 20, 17);
+INSERT INTO public.enderecos_fornecedores VALUES (17, 21, 18);
+INSERT INTO public.enderecos_fornecedores VALUES (18, 22, 19);
+INSERT INTO public.enderecos_fornecedores VALUES (19, 23, 20);
+INSERT INTO public.enderecos_fornecedores VALUES (20, 24, 21);
+INSERT INTO public.enderecos_fornecedores VALUES (21, 25, 22);
+INSERT INTO public.enderecos_fornecedores VALUES (22, 26, 23);
+INSERT INTO public.enderecos_fornecedores VALUES (23, 27, 24);
+INSERT INTO public.enderecos_fornecedores VALUES (24, 28, 25);
+INSERT INTO public.enderecos_fornecedores VALUES (25, 29, 26);
+INSERT INTO public.enderecos_fornecedores VALUES (26, 30, 27);
+INSERT INTO public.enderecos_fornecedores VALUES (27, 31, 28);
+INSERT INTO public.enderecos_fornecedores VALUES (28, 32, 29);
+INSERT INTO public.enderecos_fornecedores VALUES (29, 33, 30);
+INSERT INTO public.enderecos_fornecedores VALUES (30, 34, 31);
 
 
 --
--- TOC entry 3415 (class 0 OID 16994)
+-- TOC entry 3460 (class 0 OID 16994)
 -- Dependencies: 212
 -- Data for Name: fornecedores; Type: TABLE DATA; Schema: public; Owner: postgres
 --
@@ -611,23 +888,85 @@ INSERT INTO public.fornecedores VALUES (31, 'Alexandre Paulo Kaique Cavalcanti',
 
 
 --
--- TOC entry 3429 (class 0 OID 17092)
+-- TOC entry 3474 (class 0 OID 17092)
 -- Dependencies: 226
 -- Data for Name: lancamentos_pagar; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+INSERT INTO public.lancamentos_pagar VALUES (32, 33, 235.00);
+INSERT INTO public.lancamentos_pagar VALUES (33, 34, 580.39);
+INSERT INTO public.lancamentos_pagar VALUES (34, 35, 235.00);
+INSERT INTO public.lancamentos_pagar VALUES (35, 36, 235.00);
+INSERT INTO public.lancamentos_pagar VALUES (36, 37, 580.39);
+INSERT INTO public.lancamentos_pagar VALUES (37, 38, 580.39);
+INSERT INTO public.lancamentos_pagar VALUES (38, 39, 235.00);
+INSERT INTO public.lancamentos_pagar VALUES (39, 40, 1100.00);
+INSERT INTO public.lancamentos_pagar VALUES (40, 41, 235.00);
+INSERT INTO public.lancamentos_pagar VALUES (41, 42, 1500.00);
+INSERT INTO public.lancamentos_pagar VALUES (42, 43, 1500.00);
+INSERT INTO public.lancamentos_pagar VALUES (43, 44, 100.00);
+INSERT INTO public.lancamentos_pagar VALUES (44, 45, 830.00);
+INSERT INTO public.lancamentos_pagar VALUES (45, 46, 1500.00);
+INSERT INTO public.lancamentos_pagar VALUES (46, 47, 100.00);
+INSERT INTO public.lancamentos_pagar VALUES (47, 48, 830.00);
+INSERT INTO public.lancamentos_pagar VALUES (48, 49, 830.00);
+INSERT INTO public.lancamentos_pagar VALUES (49, 50, 580.39);
+INSERT INTO public.lancamentos_pagar VALUES (50, 51, 200.39);
+INSERT INTO public.lancamentos_pagar VALUES (51, 52, 580.39);
+INSERT INTO public.lancamentos_pagar VALUES (52, 53, 100.00);
+INSERT INTO public.lancamentos_pagar VALUES (53, 54, 150.39);
+INSERT INTO public.lancamentos_pagar VALUES (54, 55, 100.00);
+INSERT INTO public.lancamentos_pagar VALUES (55, 56, 100.00);
+INSERT INTO public.lancamentos_pagar VALUES (56, 57, 235.00);
+INSERT INTO public.lancamentos_pagar VALUES (57, 58, 235.00);
+INSERT INTO public.lancamentos_pagar VALUES (58, 59, 80.00);
+INSERT INTO public.lancamentos_pagar VALUES (59, 60, 50.00);
+INSERT INTO public.lancamentos_pagar VALUES (60, 61, 32.00);
+INSERT INTO public.lancamentos_pagar VALUES (61, 62, 32.00);
+INSERT INTO public.lancamentos_pagar VALUES (62, 63, 300.00);
 
 
 --
--- TOC entry 3427 (class 0 OID 17080)
+-- TOC entry 3472 (class 0 OID 17080)
 -- Dependencies: 224
 -- Data for Name: lancamentos_receber; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
+INSERT INTO public.lancamentos_receber VALUES (1, 3, 235.00);
+INSERT INTO public.lancamentos_receber VALUES (2, 4, 580.39);
+INSERT INTO public.lancamentos_receber VALUES (3, 5, 235.00);
+INSERT INTO public.lancamentos_receber VALUES (4, 6, 235.00);
+INSERT INTO public.lancamentos_receber VALUES (5, 7, 580.39);
+INSERT INTO public.lancamentos_receber VALUES (6, 8, 580.39);
+INSERT INTO public.lancamentos_receber VALUES (7, 9, 235.00);
+INSERT INTO public.lancamentos_receber VALUES (8, 10, 1500.00);
+INSERT INTO public.lancamentos_receber VALUES (9, 11, 235.00);
+INSERT INTO public.lancamentos_receber VALUES (10, 12, 1500.00);
+INSERT INTO public.lancamentos_receber VALUES (11, 13, 1500.00);
+INSERT INTO public.lancamentos_receber VALUES (12, 14, 100.00);
+INSERT INTO public.lancamentos_receber VALUES (13, 15, 100.00);
+INSERT INTO public.lancamentos_receber VALUES (14, 16, 1500.00);
+INSERT INTO public.lancamentos_receber VALUES (15, 17, 100.00);
+INSERT INTO public.lancamentos_receber VALUES (16, 18, 100.00);
+INSERT INTO public.lancamentos_receber VALUES (17, 19, 100.00);
+INSERT INTO public.lancamentos_receber VALUES (18, 20, 580.39);
+INSERT INTO public.lancamentos_receber VALUES (19, 21, 580.39);
+INSERT INTO public.lancamentos_receber VALUES (20, 22, 580.39);
+INSERT INTO public.lancamentos_receber VALUES (21, 23, 100.00);
+INSERT INTO public.lancamentos_receber VALUES (22, 24, 580.39);
+INSERT INTO public.lancamentos_receber VALUES (23, 25, 100.00);
+INSERT INTO public.lancamentos_receber VALUES (24, 26, 100.00);
+INSERT INTO public.lancamentos_receber VALUES (25, 27, 235.00);
+INSERT INTO public.lancamentos_receber VALUES (26, 28, 235.00);
+INSERT INTO public.lancamentos_receber VALUES (27, 29, 100.00);
+INSERT INTO public.lancamentos_receber VALUES (28, 30, 100.00);
+INSERT INTO public.lancamentos_receber VALUES (29, 31, 353.00);
+INSERT INTO public.lancamentos_receber VALUES (30, 32, 353.00);
+INSERT INTO public.lancamentos_receber VALUES (31, 33, 353.00);
 
 
 --
--- TOC entry 3444 (class 0 OID 0)
+-- TOC entry 3489 (class 0 OID 0)
 -- Dependencies: 209
 -- Name: clientes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -636,43 +975,43 @@ SELECT pg_catalog.setval('public.clientes_id_seq', 31, true);
 
 
 --
--- TOC entry 3445 (class 0 OID 0)
+-- TOC entry 3490 (class 0 OID 0)
 -- Dependencies: 221
 -- Name: contas_pagar_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.contas_pagar_id_seq', 1, false);
+SELECT pg_catalog.setval('public.contas_pagar_id_seq', 63, true);
 
 
 --
--- TOC entry 3446 (class 0 OID 0)
+-- TOC entry 3491 (class 0 OID 0)
 -- Dependencies: 219
 -- Name: contas_receber_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.contas_receber_id_seq', 1, false);
+SELECT pg_catalog.setval('public.contas_receber_id_seq', 33, true);
 
 
 --
--- TOC entry 3447 (class 0 OID 0)
+-- TOC entry 3492 (class 0 OID 0)
 -- Dependencies: 215
 -- Name: enderecos_clientes_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.enderecos_clientes_id_seq', 1, false);
+SELECT pg_catalog.setval('public.enderecos_clientes_id_seq', 30, true);
 
 
 --
--- TOC entry 3448 (class 0 OID 0)
+-- TOC entry 3493 (class 0 OID 0)
 -- Dependencies: 217
 -- Name: enderecos_fornecedores_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.enderecos_fornecedores_id_seq', 1, false);
+SELECT pg_catalog.setval('public.enderecos_fornecedores_id_seq', 30, true);
 
 
 --
--- TOC entry 3449 (class 0 OID 0)
+-- TOC entry 3494 (class 0 OID 0)
 -- Dependencies: 213
 -- Name: enderecos_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -681,7 +1020,7 @@ SELECT pg_catalog.setval('public.enderecos_id_seq', 34, true);
 
 
 --
--- TOC entry 3450 (class 0 OID 0)
+-- TOC entry 3495 (class 0 OID 0)
 -- Dependencies: 211
 -- Name: fornecedores_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
@@ -690,25 +1029,25 @@ SELECT pg_catalog.setval('public.fornecedores_id_seq', 31, true);
 
 
 --
--- TOC entry 3451 (class 0 OID 0)
+-- TOC entry 3496 (class 0 OID 0)
 -- Dependencies: 225
 -- Name: lancamentos_pagar_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.lancamentos_pagar_id_seq', 1, false);
+SELECT pg_catalog.setval('public.lancamentos_pagar_id_seq', 62, true);
 
 
 --
--- TOC entry 3452 (class 0 OID 0)
+-- TOC entry 3497 (class 0 OID 0)
 -- Dependencies: 223
 -- Name: lancamentos_receber_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
 --
 
-SELECT pg_catalog.setval('public.lancamentos_receber_id_seq', 1, false);
+SELECT pg_catalog.setval('public.lancamentos_receber_id_seq', 31, true);
 
 
 --
--- TOC entry 3226 (class 2606 OID 17141)
+-- TOC entry 3262 (class 2606 OID 17141)
 -- Name: clientes clientes_celular_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -717,7 +1056,7 @@ ALTER TABLE ONLY public.clientes
 
 
 --
--- TOC entry 3228 (class 2606 OID 17104)
+-- TOC entry 3264 (class 2606 OID 17104)
 -- Name: clientes clientes_cpf_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -726,7 +1065,7 @@ ALTER TABLE ONLY public.clientes
 
 
 --
--- TOC entry 3230 (class 2606 OID 16984)
+-- TOC entry 3266 (class 2606 OID 16984)
 -- Name: clientes clientes_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -735,7 +1074,7 @@ ALTER TABLE ONLY public.clientes
 
 
 --
--- TOC entry 3232 (class 2606 OID 16982)
+-- TOC entry 3268 (class 2606 OID 16982)
 -- Name: clientes clientes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -744,7 +1083,7 @@ ALTER TABLE ONLY public.clientes
 
 
 --
--- TOC entry 3234 (class 2606 OID 17115)
+-- TOC entry 3270 (class 2606 OID 17115)
 -- Name: clientes clientes_rg_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -753,7 +1092,7 @@ ALTER TABLE ONLY public.clientes
 
 
 --
--- TOC entry 3236 (class 2606 OID 17126)
+-- TOC entry 3272 (class 2606 OID 17126)
 -- Name: clientes clientes_telefone_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -762,7 +1101,7 @@ ALTER TABLE ONLY public.clientes
 
 
 --
--- TOC entry 3260 (class 2606 OID 17073)
+-- TOC entry 3296 (class 2606 OID 17073)
 -- Name: contas_pagar contas_pagar_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -771,7 +1110,7 @@ ALTER TABLE ONLY public.contas_pagar
 
 
 --
--- TOC entry 3258 (class 2606 OID 17060)
+-- TOC entry 3294 (class 2606 OID 17060)
 -- Name: contas_receber contas_receber_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -780,7 +1119,7 @@ ALTER TABLE ONLY public.contas_receber
 
 
 --
--- TOC entry 3254 (class 2606 OID 17025)
+-- TOC entry 3290 (class 2606 OID 17025)
 -- Name: enderecos_clientes enderecos_clientes_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -789,7 +1128,7 @@ ALTER TABLE ONLY public.enderecos_clientes
 
 
 --
--- TOC entry 3256 (class 2606 OID 17042)
+-- TOC entry 3292 (class 2606 OID 17042)
 -- Name: enderecos_fornecedores enderecos_fornecedores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -798,7 +1137,7 @@ ALTER TABLE ONLY public.enderecos_fornecedores
 
 
 --
--- TOC entry 3252 (class 2606 OID 17018)
+-- TOC entry 3288 (class 2606 OID 17018)
 -- Name: enderecos enderecos_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -807,7 +1146,7 @@ ALTER TABLE ONLY public.enderecos
 
 
 --
--- TOC entry 3238 (class 2606 OID 17199)
+-- TOC entry 3274 (class 2606 OID 17199)
 -- Name: fornecedores fornecedores_celular_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -816,7 +1155,7 @@ ALTER TABLE ONLY public.fornecedores
 
 
 --
--- TOC entry 3240 (class 2606 OID 17189)
+-- TOC entry 3276 (class 2606 OID 17189)
 -- Name: fornecedores fornecedores_cnpj_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -825,7 +1164,7 @@ ALTER TABLE ONLY public.fornecedores
 
 
 --
--- TOC entry 3242 (class 2606 OID 17195)
+-- TOC entry 3278 (class 2606 OID 17195)
 -- Name: fornecedores fornecedores_email_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -834,7 +1173,7 @@ ALTER TABLE ONLY public.fornecedores
 
 
 --
--- TOC entry 3244 (class 2606 OID 17191)
+-- TOC entry 3280 (class 2606 OID 17191)
 -- Name: fornecedores fornecedores_inscricao_estadual_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -843,7 +1182,7 @@ ALTER TABLE ONLY public.fornecedores
 
 
 --
--- TOC entry 3246 (class 2606 OID 16999)
+-- TOC entry 3282 (class 2606 OID 16999)
 -- Name: fornecedores fornecedores_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -852,7 +1191,7 @@ ALTER TABLE ONLY public.fornecedores
 
 
 --
--- TOC entry 3248 (class 2606 OID 17197)
+-- TOC entry 3284 (class 2606 OID 17197)
 -- Name: fornecedores fornecedores_telefone_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -861,7 +1200,7 @@ ALTER TABLE ONLY public.fornecedores
 
 
 --
--- TOC entry 3250 (class 2606 OID 17193)
+-- TOC entry 3286 (class 2606 OID 17193)
 -- Name: fornecedores fornecedores_website_key; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -870,7 +1209,7 @@ ALTER TABLE ONLY public.fornecedores
 
 
 --
--- TOC entry 3264 (class 2606 OID 17097)
+-- TOC entry 3300 (class 2606 OID 17097)
 -- Name: lancamentos_pagar lancamentos_pagar_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -879,7 +1218,7 @@ ALTER TABLE ONLY public.lancamentos_pagar
 
 
 --
--- TOC entry 3262 (class 2606 OID 17085)
+-- TOC entry 3298 (class 2606 OID 17085)
 -- Name: lancamentos_receber lancamentos_receber_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -888,7 +1227,7 @@ ALTER TABLE ONLY public.lancamentos_receber
 
 
 --
--- TOC entry 3269 (class 2606 OID 17061)
+-- TOC entry 3305 (class 2606 OID 17061)
 -- Name: contas_receber fk_clientes_to_contas_receber; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -897,7 +1236,7 @@ ALTER TABLE ONLY public.contas_receber
 
 
 --
--- TOC entry 3266 (class 2606 OID 17031)
+-- TOC entry 3302 (class 2606 OID 17031)
 -- Name: enderecos_clientes fk_clientes_to_enderecos_clientes; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -906,7 +1245,7 @@ ALTER TABLE ONLY public.enderecos_clientes
 
 
 --
--- TOC entry 3272 (class 2606 OID 17098)
+-- TOC entry 3308 (class 2606 OID 17098)
 -- Name: lancamentos_pagar fk_contas_pagar_to_lancamentos_pagar; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -915,7 +1254,7 @@ ALTER TABLE ONLY public.lancamentos_pagar
 
 
 --
--- TOC entry 3271 (class 2606 OID 17086)
+-- TOC entry 3307 (class 2606 OID 17086)
 -- Name: lancamentos_receber fk_contas_pagar_to_lancamentos_receber; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -924,7 +1263,7 @@ ALTER TABLE ONLY public.lancamentos_receber
 
 
 --
--- TOC entry 3265 (class 2606 OID 17026)
+-- TOC entry 3301 (class 2606 OID 17026)
 -- Name: enderecos_clientes fk_enderecos_to_enderecos_clientes; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -933,7 +1272,7 @@ ALTER TABLE ONLY public.enderecos_clientes
 
 
 --
--- TOC entry 3267 (class 2606 OID 17043)
+-- TOC entry 3303 (class 2606 OID 17043)
 -- Name: enderecos_fornecedores fk_enderecos_to_enderecos_fornecedores; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -942,7 +1281,7 @@ ALTER TABLE ONLY public.enderecos_fornecedores
 
 
 --
--- TOC entry 3270 (class 2606 OID 17074)
+-- TOC entry 3306 (class 2606 OID 17074)
 -- Name: contas_pagar fk_fornecedores_to_contas_pagar; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -951,7 +1290,7 @@ ALTER TABLE ONLY public.contas_pagar
 
 
 --
--- TOC entry 3268 (class 2606 OID 17048)
+-- TOC entry 3304 (class 2606 OID 17048)
 -- Name: enderecos_fornecedores fk_fornecedores_to_enderecos_fornecedores; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
@@ -959,7 +1298,7 @@ ALTER TABLE ONLY public.enderecos_fornecedores
     ADD CONSTRAINT fk_fornecedores_to_enderecos_fornecedores FOREIGN KEY (id_fornecedores) REFERENCES public.fornecedores(id);
 
 
--- Completed on 2022-06-30 14:22:13 -03
+-- Completed on 2022-07-01 14:41:14 -03
 
 --
 -- PostgreSQL database dump complete
